@@ -74,6 +74,7 @@ do
 	local _;
 	
 	for itemID, phrase in pairs(itemIDToPhrase) do
+		itemID = tonumber(itemID)
 		phraseToItemID[phrase] = itemID
 		_, vegetableLinks[itemID], _, _, _, _, _, _, _, vegetableIcons[itemID] = GetItemInfo(itemID) -- GetItemInfo doesn't always have data at this stage, but calling it here should make it available later
 	end
