@@ -118,6 +118,14 @@ local ICON_FORMAT = "|T%s:0|t %s"
 -- Util Functions --
 --------------------
 
+local function populateVegetableCaches()
+	local _;
+	for itemID, phrase in pairs(itemIDToPhrase) do
+		itemID = tonumber(itemID)
+		_, vegetableLinks[itemID], _, _, _, _, _, _, _, vegetableIcons[itemID] = GetItemInfo(itemID) -- GetItemInfo doesn't always have data at this stage, but calling it here should make it available later
+	end
+end
+
 local tonumberall;
 do
 	-- Based on some quick tests, the cache table version (loading the arguments into a table and unpacking the table) of the tonumberall function
@@ -283,6 +291,12 @@ end
 local DataObject = LibStub("LibDataBroker-1.1"):NewDataObject(L["Jogu Predictions"], {type = "data source", tocname = addon, text = L["No Prediction"], icon = "Interface\\Icons\\INV_Misc_MonsterHead_03"})
 
 function DataObject:OnTooltipShow()
+	if not vegetableLinks[1] or not vegetableIcons[1] then
+		-- GetItemInfo didn't return data with the initial call, but it should be available now.
+		-- This doesn't always happen, most of the time the initial call returns the correct data.
+		populateVegetableCaches()
+	end
+	
 	self:AddDoubleLine(L["Jogu Predictions"])
 	self:AddLine(" ")
 	if CURRENT_ITEMID == 0 and LAST_UPDATE == "" then
@@ -413,11 +427,7 @@ function JP:PLAYER_ENTERING_WORLD() -- Channel info isn't available directly on 
 	if not vegetableLinks[1] or not vegetableIcons[1] then
 		-- GetItemInfo didn't return data with the initial call, but it should be available now.
 		-- This doesn't always happen, most of the time the initial call returns the correct data.
-		JP_DELAYED_CACHE = true
-		local _;
-		for itemID, phrase in pairs(itemIDToPhrase) do
-			_, vegetableLinks[itemID], _, _, _, _, _, _, _, vegetableIcons[itemID] = GetItemInfo(itemID) -- GetItemInfo doesn't always have data at this stage, but calling it here should make it available later
-		end
+		populateVegetableCaches()
 	end
 	
 	self:UnregisterEvent("PLAYER_ENTERING_WORLD")
@@ -616,6 +626,12 @@ SlashCmdList.JOGU_PREDICTIONS = function(input)
 	if input == "sync" then
 		JP:StartSync()
 	else
+		if not vegetableLinks[1] or not vegetableIcons[1] then
+			-- GetItemInfo didn't return data with the initial call, but it should be available now.
+			-- This doesn't always happen, most of the time the initial call returns the correct data.
+			populateVegetableCaches()
+		end
+		
 		if LAST_UPDATE == "" then
 			print(CHAT_PREFIX, L["No Prediction"])
 			print(L["Use |cffff0000/jogupredictions sync|r to update the prediction with a whisper sync."])
