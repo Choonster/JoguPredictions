@@ -1,0 +1,14 @@
+﻿## Title: Jogu Predictions
+## Interface: 50001
+## Author: Choonster
+## Version: @project-version@
+## Notes: Tells you Jogu the Drunk's current crop prediction.
+## X-License: MIT License
+## SavedVariables: JOGU_PHRASES
+
+Libs\LibStub\LibStub.lua
+Libs\CallbackHandler-1.0\CallbackHandler-1.0.lua
+Libs\LibDataBroker-1.1\LibDataBroker-1.1.lua
+
+enUS.lua
+core.lua
