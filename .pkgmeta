@@ -10,4 +10,7 @@
     
 package-as: JoguPredictions
 
-tools-used: findglobals
+enable-nolib-creation: no
+
+tools-used:
+    - findglobals
