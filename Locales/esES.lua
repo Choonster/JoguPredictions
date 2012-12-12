@@ -28,4 +28,4 @@ local phrases = ns.locale.phrases
 -- General AddOn locale strings
 local general = ns.locale.general
 
---@localization(locale="esES", format="lua_additive_table", handle-unlocalized="english", escape-non-ascii=false, table-name="general", same-key-is-true=true, namespace="General")@4
+--@localization(locale="esES", format="lua_additive_table", handle-unlocalized="english", escape-non-ascii=false, table-name="general", same-key-is-true=true, namespace="General")@
