@@ -118,12 +118,24 @@ local ICON_FORMAT = "|T%s:0|t %s"
 -- Util Functions --
 --------------------
 
-local function populateVegetableCaches()
-	local _;
-	for itemID, phrase in pairs(itemIDToPhrase) do
-		itemID = tonumber(itemID)
-		_, vegetableLinks[itemID], _, _, _, _, _, _, _, vegetableIcons[itemID] = GetItemInfo(itemID) -- GetItemInfo doesn't always have data at this stage, but calling it here should make it available later
+local populateVegetableCaches;
+if not vegetableLinks[74840] or not vegetableIcons[74840] then -- Only create the function if we don't have the data.
+
+	function populateVegetableCaches()
+		-- GetItemInfo didn't return data with the initial call, but it should be available now.
+		-- This doesn't always happen, most of the time the initial call returns the correct data.
+		local _;
+		for itemID, phrase in pairs(itemIDToPhrase) do
+			itemID = tonumber(itemID)
+			_, vegetableLinks[itemID], _, _, _, _, _, _, _, vegetableIcons[itemID] = GetItemInfo(itemID) -- GetItemInfo doesn't always have data at this stage, but calling it here should make it available later
+		end
+		
+		if vegetableLinks[74840] and vegetableIcons[74840] then
+			-- We've got the data now, we can delete this function
+			populateVegetableCaches = nil
+		end
 	end
+
 end
 
 local tonumberall;
@@ -291,12 +303,6 @@ end
 local DataObject = LibStub("LibDataBroker-1.1"):NewDataObject(L["Jogu Predictions"], {type = "data source", tocname = addon, text = L["No Prediction"], icon = "Interface\\Icons\\INV_Misc_MonsterHead_03"})
 
 function DataObject:OnTooltipShow()
-	if not vegetableLinks[1] or not vegetableIcons[1] then
-		-- GetItemInfo didn't return data with the initial call, but it should be available now.
-		-- This doesn't always happen, most of the time the initial call returns the correct data.
-		populateVegetableCaches()
-	end
-	
 	self:AddDoubleLine(L["Jogu Predictions"])
 	self:AddLine(" ")
 	if CURRENT_ITEMID == 0 and LAST_UPDATE == "" then
@@ -424,11 +430,7 @@ function JP:PLAYER_ENTERING_WORLD() -- Channel info isn't available directly on 
 		timer:Play()
 	end
 	
-	if not vegetableLinks[1] or not vegetableIcons[1] then
-		-- GetItemInfo didn't return data with the initial call, but it should be available now.
-		-- This doesn't always happen, most of the time the initial call returns the correct data.
-		populateVegetableCaches()
-	end
+	if populateVegetableCaches then populateVegetableCaches() end
 	
 	self:UnregisterEvent("PLAYER_ENTERING_WORLD")
 end
@@ -626,12 +628,6 @@ SlashCmdList.JOGU_PREDICTIONS = function(input)
 	if input == "sync" then
 		JP:StartSync()
 	else
-		if not vegetableLinks[1] or not vegetableIcons[1] then
-			-- GetItemInfo didn't return data with the initial call, but it should be available now.
-			-- This doesn't always happen, most of the time the initial call returns the correct data.
-			populateVegetableCaches()
-		end
-		
 		if LAST_UPDATE == "" then
 			print(CHAT_PREFIX, L["No Prediction"])
 			print(L["Use |cffff0000/jogupredictions sync|r to update the prediction with a whisper sync."])
