@@ -14,3 +14,6 @@ enable-nolib-creation: no
 
 tools-used:
     - findglobals
+	
+ignore:
+    - /enUS.lua
