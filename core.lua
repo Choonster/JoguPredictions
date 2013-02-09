@@ -657,12 +657,14 @@ end
 --[[------------
 -- Public API --
 --]]------------
+
+--- The global table that all API functions are stored in.
+-- @field VERSION The current version of Jogu Predictions
 JPAPI = {}
 
---- The current version of Jogu Predictions
 JPAPI.VERSION = VERSION
 
---- Returns the current prediction's itemID and the dateString of its last update time. Returns <pre>nil, nil</pre> when there hasn't been an update yet.
+--- Returns the current prediction's itemID and the dateString of its last update time. Returns nil, nil when there hasn't been an update yet.
 -- @return itemID (number) The itemID of the current prediction.
 -- @return lastUpdate (string) The dateString representing the time of the last update.
 function JPAPI:GetCurrentPrediction()
