@@ -4,7 +4,7 @@ local addon, ns = ...
 -- List them here for Mikk's FindGlobals script
 --
 -- General functions
--- GLOBALS: pairs, ipairs, GetItemInfo, UnitGUID, GetNumGossipOptions, GetGossipText, GetQuestResetTime
+-- GLOBALS: pairs, ipairs, GetItemInfo, UnitGUID, GetNumGossipOptions, GetGossipText, GetQuestResetTime, GetAddOnMetadata
 --
 -- Channel roster functions
 -- GLOBALS: GetNumDisplayChannels, GetChannelDisplayInfo, GetChannelRosterInfo, SetSelectedDisplayChannel
@@ -18,6 +18,8 @@ local unpack, wipe = unpack, wipe
 local strjoin, strsplit = strjoin, strsplit
 local cocreate, coresume, coyield, costatus = coroutine.create, coroutine.resume, coroutine.yield, coroutine.status
 local time = time
+
+local VERSION = GetAddOnMetadata(addon, "X-Curse-Packaged-Version") or GetAddOnMetadata(addon, "Version")
 
 -- The player's name
 local PLAYER_NAME = UnitName("player")
@@ -69,8 +71,8 @@ do
 	phraseToItemID = {}
 	vegetableLinks = {}
 	vegetableIcons = {}
-	JPI=vegetableIcons
-	JPV=vegetableLinks
+	-- JPI=vegetableIcons
+	-- JPV=vegetableLinks
 	local _;
 	
 	for itemID, phrase in pairs(itemIDToPhrase) do
@@ -114,9 +116,9 @@ local LT_ONE_MIN = "<" .. D_MINUTES:format(1)
 local CHAT_PREFIX = "|cff33ff99" .. L["Jogu Predictions"] .. ":|r"
 local ICON_FORMAT = "|T%s:0|t %s"
 
---------------------
+--[[----------------
 -- Util Functions --
---------------------
+--]]----------------
 
 local populateVegetableCaches;
 if not vegetableLinks[74840] or not vegetableIcons[74840] then -- Only create the function if we don't have the data.
@@ -271,11 +273,11 @@ end
 	end
 --]]
 
-local DateDiff;
+local DateDiff, StringToTime;
 do
 	local t = {} -- temporary storage for the fields to pass to time()
 	
-	local function stringToTime(dateString)
+	function StringToTime(dateString)
 		t.year, t.month, t.day, t.hour, t.min = DecodeDateString(dateString) -- We don't need to worry about DST since we're only dealing with time differences and not absolute times
 		return time(t)
 	end
@@ -283,8 +285,8 @@ do
 	-- Returns the number of seconds between date1 and date2 (i.e. date1 - date2)
 	-- Both arguments must be dateStrings (from EncodeDateString)
 	function DateDiff(date1, date2)
-		local time1 = stringToTime(date1)
-		local time2 = stringToTime(date2)
+		local time1 = StringToTime(date1)
+		local time2 = StringToTime(date2)
 		
 		return time1 - time2
 	end
@@ -297,9 +299,9 @@ local function GetLastUpdateString()
 	return TIME_FORMAT:format(LAST_UPDATE:gsub("T", " ", 1), lastUpdateTime)
 end
 
----------------------------
+--[[-----------------------
 -- LibDataBroker support --
----------------------------
+--]]-----------------------
 local DataObject = LibStub("LibDataBroker-1.1"):NewDataObject(L["Jogu Predictions"], {type = "data source", tocname = addon, text = L["No Prediction"], icon = "Interface\\Icons\\INV_Misc_MonsterHead_03"})
 
 function DataObject:OnTooltipShow()
@@ -321,9 +323,9 @@ function DataObject:OnTooltipShow()
 	end
 end
 
------------------------------
+--[[-------------------------
 -- Communication Functions --
------------------------------
+--]]-------------------------
 
 RegisterAddonMessagePrefix(PREFIX)
 
@@ -566,9 +568,9 @@ function JP:OnQueryFailure()
 	end
 end
 
--------------------
--- Main functions--
--------------------
+--[[----------------
+-- Main functions --
+--]]----------------
 local LocalisedPhraseKeys = {}
 
 JP:RegisterEvent("ADDON_LOADED")
@@ -577,7 +579,12 @@ JP:RegisterEvent("PLAYER_LOGOUT")
 
 function JP:ADDON_LOADED(name)
 	if name ~= addon then return end
-
+	
+	-- Load the predictions
+	CURRENT_ITEMID = JOGUP_SAVED_ITEMID or 0
+	LAST_UPDATE = JOGUP_SAVED_UPDATE or ""
+	
+	-- Load the phrases
 	JOGU_PHRASES = JOGU_PHRASES or {}
 	local joguPhrases = JOGU_PHRASES
 	
@@ -609,9 +616,12 @@ function JP:GOSSIP_SHOW()
 end
 
 function JP:PLAYER_LOGOUT()
+	-- Save the prediction and update time
+	JOGUP_SAVED_ITEMID = CURRENT_ITEMID
+	JOGUP_SAVED_UPDATE = LAST_UPDATE
+	
 	-- The JOGU_PHRASES array saves a list of Jogu's phrases from each locale
 	-- This allows users to submit the phrases (with English item name annotations), making it easy to modify the AddOn to work in their locale.
-	
 	local phrases = JOGU_PHRASES[LOCALE]
 	
 	for phrase, _ in pairs(LocalisedPhraseKeys) do -- Convert the phrase-keyed table to the JOGU_PHRASES array for saving
@@ -619,9 +629,9 @@ function JP:PLAYER_LOGOUT()
 	end
 end
 
--------------------
+--[[---------------
 -- Slash Command --
--------------------
+--]]---------------
 SLASH_JOGU_PREDICTIONS1, SLASH_JOGU_PREDICTIONS2, SLASH_JOGU_PREDICTIONS3 = L["/jogupredictions"], L["/jogup"], L["/jp"]
 
 SlashCmdList.JOGU_PREDICTIONS = function(input)
@@ -642,4 +652,53 @@ SlashCmdList.JOGU_PREDICTIONS = function(input)
 			end
 		end
 	end	
+end
+
+--[[------------
+-- Public API --
+--]]------------
+JPAPI = {}
+
+--- The current version of Jogu Predictions
+JPAPI.VERSION = VERSION
+
+--- Returns the current prediction's itemID and the dateString of its last update time. Returns <pre>nil, nil</pre> when there hasn't been an update yet.
+-- @return itemID (number) The itemID of the current prediction.
+-- @return lastUpdate (string) The dateString representing the time of the last update.
+function JPAPI:GetCurrentPrediction()
+	local itemID = CURRENT_ITEMID ~= 0 and CURRENT_ITEMID or nil
+	local lastUpdate = LAST_UPDATE ~= "" and LAST_UPDATE or nil
+	
+	return itemID, lastUpdate
+end
+
+--- Splits a dateString into its year, month, day, hour and minute components.
+-- @param dateString (string) The dateString to decode.
+-- @return year (number) The year component of the dateString.
+-- @return month (number) The month component of the dateString.
+-- @return day (number) The day component of the dateString.
+-- @return hour (number) The hour component of the dateString.
+-- @return minute (number) The minute component of the dateString.
+function JPAPI:DecodeDateString(dateString)
+	return DecodeDateString(dateString)
+end
+
+--- Returns the time represented by a dateString as a single integer (compatible with the standard date/time functions).
+-- @param dateString (string) The dateString to decode.
+-- @return time (number) The time represented by the dateString.
+function JPAPI:StringToTime(dateString)
+	return StringToTime(dateString)
+end
+
+--- Returns a dateString representing the specified date/time.
+-- Any argument not passed to the function will use the corresponding return value of CalendarGetDate/GetGameTime instead.
+-- Calling this with no arguments will return a dateString representing the current realm time.
+-- @param year (number) The year component of the dateString.
+-- @param month (number) The month component of the dateString.
+-- @param day (number) The day component of the dateString.
+-- @param hour (number) The hour component of the dateString.
+-- @param minute (number) The minute component of the dateString.
+-- @return dateString (string) The encoded dateString.
+function JPAPI:EncodeDateString(year, month, day, hour, minute)
+	return EncodeDateString(year, month, day, hour, minute)
 end

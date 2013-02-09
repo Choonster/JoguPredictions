@@ -4,7 +4,7 @@
 ## Version: @project-version@
 ## Notes: Tells you Jogu the Drunk's current crop prediction.
 ## X-License: MIT License
-## SavedVariables: JOGU_PHRASES
+## SavedVariables: JOGU_PHRASES, JOGUP_SAVED_ITEMID, JOGUP_SAVED_UPDATE
 
 Libs\LibStub\LibStub.lua
 Libs\CallbackHandler-1.0\CallbackHandler-1.0.lua
