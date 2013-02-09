@@ -659,8 +659,9 @@ end
 --]]------------
 
 --- The global table that all API functions are stored in.
--- @class table
 -- @name JPAPI
+-- @class table
+-- @description The global table that all API functions are stored in.
 -- @field VERSION The current version of Jogu Predictions
 JPAPI = {}
 
