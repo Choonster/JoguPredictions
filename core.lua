@@ -702,3 +702,10 @@ end
 function JPAPI:EncodeDateString(year, month, day, hour, minute)
 	return EncodeDateString(year, month, day, hour, minute)
 end
+
+--- Returns the time of the last update and how long ago that was as a human-readable string.
+-- Suitable for displaying to the user.
+-- @return lastUpdate (string) The time of the last update.
+function JPAPI:GetLastUpdateString()
+	return GetLastUpdateString()
+end
