@@ -145,10 +145,10 @@ do
 	-- Based on some quick tests, the cache table version (loading the arguments into a table and unpacking the table) of the tonumberall function
 	-- seems to be more efficient than the recursive version (returning the first argument followed by the result of calling itself with the remaining arguments)
 	--
-	-- The main disadvantage is that the cache table version can't handle nil arguments due to unpack's use of the length operator
-	-- (though we could use table.maxn(tonumcache) as the second argument to unpack if we really needed to fix this).
+	-- This version can now handle nil arguments and is probably slightly more efficient than the old version due to not wiping the cache table with each call, just
+	-- overwriting the values in the range (1, numArgs) and unpacking that range.
 	--
-	-- Since the cache table one was taking about 0.33 seconds to convert 7,999 number string arguments between 1 and 1,000 and the recursive version was taking 1.2 seconds
+	-- Since the old cache table version was taking about 0.33 seconds to convert 7,999 number string arguments between 1 and 1,000 and the recursive version was taking 1.2 seconds
 	-- to do the same, the difference probably won't be noticable with the five arguments we're using this with.
 	--
 	-- I only wrote this because I wasn't sure which of the two versions of this function would be faster and decided to test it.
@@ -156,12 +156,12 @@ do
 
 	local tonumcache = {}
 	function tonumberall(...)
-		wipe(tonumcache)
-		for i = 1, select("#", ...) do
+		local numArgs = select("#", ...)
+		for i = 1, numArgs do
 			local argI = select(i, ...)
 			tonumcache[i] = tonumber(argI) or argI
 		end
-		return unpack(tonumcache)
+		return unpack(tonumcache, 1, numArgs)
 	end
 end
 
