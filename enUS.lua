@@ -32,7 +32,7 @@ phrases["74843"] = "Have I ever told you that I hate Scallions? Hate 'em!\n\n<Jo
 phrases["74848"] = "Striped melons are quite juishy this time of year! Put some sheeds in the ground, and you will reap the harvest on the morrow."
 phrases["74847"] = "Jade Melonsh grow the color of milky jade. Conditionsh will be perfect tomorrow for growing thish vegetable... I think."
 phrases["74849"] = "I'm seeing Pink Turnipsh in your future."
-phrases["74841"] = "You ever heard of a juicycrunch carrot? They'll never be juicier than tomorrow."
+phrases["74841"] = "You ever heard of a juishycrunch carrot? They'll never be juisher than tomorrow."
 phrases["74842"] = "Pumpkins! It'sh gonna be huge, gigantic pumpkins!"
 phrases["74844"] = "Shpring for a leek, and you might get two."
 --@end-do-not-package@
